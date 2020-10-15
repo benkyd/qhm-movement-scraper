@@ -1,0 +1,15 @@
+{
+  "name": "qhmscraper",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Ben Kyd <benjaminkyd@gmail.com> (https://benkyd.co.uk)",
+  "license": "MIT",
+  "dependencies": {
+    "got": "^11.7.0",
+    "jsdom": "^16.4.0"
+  }
+}
