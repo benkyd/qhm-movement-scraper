@@ -1,17 +1,20 @@
 const fs = require('fs');
 const got = require('got');
 const jsdom = require('jsdom');
+const request = require('request');
 
-const today = new Date();
-const tomorrow = new Date(today);
-tomorrow.setDate(today.getDate() + 1);
-
-console.log(`QHM Portsmouth Shipping Movements for ${tomorrow.getDate()}/${tomorrow.getMonth() + 1}/${tomorrow.getFullYear()}`);
-
-const URL = `https://www.royalnavy.mod.uk/qhm/portsmouth/shipping-movements/daily-movements?date=${tomorrow.getDate()}/${tomorrow.getMonth() + 1}/${tomorrow.getFullYear()}`
+require('dotenv').config();
 
 async function main()
 {
+    const today = new Date();
+    const tomorrow = new Date(today);
+    tomorrow.setDate(today.getDate() + 1);
+    
+    const URL = `https://www.royalnavy.mod.uk/qhm/portsmouth/shipping-movements/daily-movements?date=${tomorrow.getDate()}/${tomorrow.getMonth() + 1}/${tomorrow.getFullYear()}`;
+
+    let out = `QHM Portsmouth Shipping Movements for ${tomorrow.getDate()}/${tomorrow.getMonth() + 1}/${tomorrow.getFullYear()}\n\r`;
+
     const res = await got(URL);
     const dom = new jsdom.JSDOM(res.body);
 
@@ -25,6 +28,7 @@ async function main()
         if (row.cells[2].innerHTML.includes('MV')) continue;
         if (row.cells[2].innerHTML.includes('CLOSE')) continue;
         if (row.cells[2].innerHTML.includes('OPEN')) continue;
+        if (row.cells[2].innerHTML.includes('Ship')) continue;
         
         let out = {
             time: row.cells[1].innerHTML.trim().replace(/ +(?= )/g,''),
@@ -39,10 +43,39 @@ async function main()
 
     // format output
     for (o of output)
-    {
-        console.log(`${o.vessel} movement at ${o.time}, from ${o.from} to ${o.to}`);
-    }
+        out += `${o.vessel} movement at ${o.time}, from ${o.from} to ${o.to}\n\r`;
 
+    console.log(out);
+
+    // use sending api
+    const numbers = process.env.SMS_RECIPIENTS.split(' ');
+    
+    for (number of numbers)
+    {
+        const options = {
+            'method': 'POST',
+            'url': `https://http-api.d7networks.com/send?username=${process.env.SMS_USER}&password=${process.env.SMS_PASS}&dlr-method=POST&dlr-url=https://4ba60af1.ngrok.io/receive&dlr=yes&dlr-level=3&from=QHM Daily&content=${out}&to=${number}`,
+            'headers': {
+            },
+            formData: {
+          
+            }
+        };
+        request(options, function (error, response) {
+            if (error) 
+            {
+                console.log(`Error sending SMS to ${number}: ${error}`);
+            }
+            console.log(`Sent SMS to ${number}: ${response.body}`);
+        });
+    }
 }
 
 main();
+
+function TestDay()
+{
+    // if 
+}
+
+setInterval(TestDay, process.env.CHECK_INTERVAL);

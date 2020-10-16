@@ -9,6 +9,7 @@
   "author": "Ben Kyd <benjaminkyd@gmail.com> (https://benkyd.co.uk)",
   "license": "MIT",
   "dependencies": {
+    "dotenv": "^8.2.0",
     "got": "^11.7.0",
     "jsdom": "^16.4.0"
   }
