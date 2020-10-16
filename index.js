@@ -5,6 +5,8 @@ const request = require('request');
 
 require('dotenv').config();
 
+console.log('QHM Shipping movements Service Starting Up...');
+
 async function main()
 {
     const today = new Date();
@@ -71,11 +73,9 @@ async function main()
     }
 }
 
-main();
-
-function TestDay()
-{
-    // if 
-}
-
-setInterval(TestDay, process.env.CHECK_INTERVAL);
+setInterval(function(){
+    let date = new Date();
+    if (date.getHours() === 12 && date.getMinutes() === 00) {
+        main();
+    }
+}, 60000);
